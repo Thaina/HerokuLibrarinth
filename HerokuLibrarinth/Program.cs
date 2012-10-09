@@ -22,8 +22,8 @@ namespace HerokuLibrarinth
 		Program()
 		{
 			var port	= Environment.GetEnvironmentVariable("PORT");
-			listener.Prefixes.Add("https://*:" + port);
-			listener.Prefixes.Add("http://*:" + port);
+			listener.Prefixes.Add("https://*:" + port + '/');
+			listener.Prefixes.Add("http://*:" + port + '/');
 
 			listener.Start();
 
