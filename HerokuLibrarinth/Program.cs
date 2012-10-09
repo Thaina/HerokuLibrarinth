@@ -46,7 +46,6 @@ namespace HerokuLibrarinth
 		static void Main(string[] args)
 		{
 			var program	= new Program();
-			var line	= string.Empty;
 			while(program.IsAlive)
 				Thread.Sleep(100);
 		}
