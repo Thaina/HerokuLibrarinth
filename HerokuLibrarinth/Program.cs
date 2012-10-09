@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -16,7 +17,10 @@ namespace HerokuLibrarinth
 			var context	= listener.EndGetContext(result);
 			asyncResult	= listener.BeginGetContext(Listen,null);
 
-
+			var response	= context.Response;
+			var writer	= new StreamWriter(response.OutputStream);
+			writer.WriteLine("TestTest");
+			writer.Close();
 		}
 
 		Program()
