@@ -17,7 +17,7 @@ namespace Heroku
 			if(string.IsNullOrEmpty(port))
 				port	= "8888";
 
-			listener.Prefixes.Add("https://*:" + port + '/');
+			listener.Prefixes.Add("http://*:" + port + '/');
 		}
 
 		protected override void Listen(HttpListenerContext context)
