@@ -39,14 +39,14 @@ namespace HerokuBase
 			listener.Start();
 
 			asyncResult	= listener.BeginGetContext(Listening,listener);
-
-			while(IsAlive)
-				Thread.Sleep(100);
 		}
 
 		protected static void Run<P>() where P : Program,new()
 		{
-			new P().Run();
+			var program	= new P();
+			program.Run();
+			while(program.IsAlive)
+				Thread.Sleep(100);
 		}
 	}
 }
