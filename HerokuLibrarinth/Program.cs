@@ -27,7 +27,7 @@ namespace Heroku
 
 			var writer	= new StreamWriter(response.OutputStream);
 			writer.WriteLine("This is C# Application");
-			writer.WriteLine("Request from " + request.Headers["X-FORWARDED-PROTO"]);
+			writer.WriteLine(request.HttpMethod + " Request from " + request.Headers["X-FORWARDED-PROTO"]);
 
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
