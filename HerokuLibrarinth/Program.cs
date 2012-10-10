@@ -31,14 +31,10 @@ namespace Heroku
 
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
+				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
-				var urlWithoutPort	= request.Url.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped);
-				var builder	= new UriBuilder(urlWithoutPort)
-				{
-					Scheme	= Uri.UriSchemeHttps
-				};
 
-				writer.WriteLine("Not HTTPS. Redirect to : " + builder.Uri.ToString());
+				writer.WriteLine("Not HTTPS. Redirect to : " + builder.Uri.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped));
 			}
 
 			writer.Close();
