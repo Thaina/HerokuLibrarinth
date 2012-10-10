@@ -39,8 +39,6 @@ namespace Heroku
 				};
 
 				writer.WriteLine("Not HTTPS. Redirect to : " + builder.Uri.ToString());
-				writer.Close();
-				return;
 			}
 
 			writer.Close();
