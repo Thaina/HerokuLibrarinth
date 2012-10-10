@@ -24,16 +24,18 @@ namespace Heroku
 		{
 			var request	= context.Request;
 			var response	= context.Response;
-
-			if(request.Headers["X-FORWARDED-PROTO"] != "https")
+			/*
+			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 				response.Redirect(builder.Uri.ToString());
 				return;
 			}
+			*/
 
 			var writer	= new StreamWriter(response.OutputStream);
-			writer.WriteLine("TestTest");
+			writer.WriteLine("This is C# Application");
+			writer.WriteLine("Request from " + request.Headers["X-FORWARDED-PROTO"]);
 			writer.Close();
 		}
 
