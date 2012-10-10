@@ -20,6 +20,7 @@ namespace Heroku
 			listener.Prefixes.Add("http://*:" + port + '/');
 		}
 
+		string state	= null;
 		protected override void Listen(HttpListenerContext context)
 		{
 			var request	= context.Request;
@@ -40,7 +41,11 @@ namespace Heroku
 			var writer	= new StreamWriter(response.OutputStream);
 			writer.WriteLine("This is C# Application");
 			writer.WriteLine("Request from " + request.Headers["X-FORWARDED-PROTO"]);
+			writer.WriteLine("Last State : " + state);
+			writer.WriteLine("New State : " + request.QueryString["state"]);
 			writer.Close();
+
+			state	= request.QueryString["state"];
 		}
 
 		static void Main(string[] args)
