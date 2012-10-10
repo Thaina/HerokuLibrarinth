@@ -27,7 +27,13 @@ namespace Heroku
 
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
-				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
+				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
+				var urlWithoutPort	= request.Url.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped);
+				var builder	= new UriBuilder(urlWithoutPort)
+				{
+					Scheme	= Uri.UriSchemeHttps
+				};
+
 				response.RedirectLocation	= builder.Uri.ToString();
 				response.StatusCode	= (int)HttpStatusCode.Moved;
 				response.Close();
