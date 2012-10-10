@@ -25,6 +25,10 @@ namespace Heroku
 			var request	= context.Request;
 			var response	= context.Response;
 
+			var writer	= new StreamWriter(response.OutputStream);
+			writer.WriteLine("This is C# Application");
+			writer.WriteLine("Request from " + request.Headers["X-FORWARDED-PROTO"]);
+
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
@@ -34,15 +38,11 @@ namespace Heroku
 					Scheme	= Uri.UriSchemeHttps
 				};
 
-				response.RedirectLocation	= builder.Uri.ToString();
-				response.StatusCode	= (int)HttpStatusCode.Moved;
-				response.Close();
+				writer.WriteLine("Not HTTPS. Redirect to : " + builder.Uri.ToString());
+				writer.Close();
 				return;
 			}
 
-			var writer	= new StreamWriter(response.OutputStream);
-			writer.WriteLine("This is C# Application");
-			writer.WriteLine("Request from " + request.Headers["X-FORWARDED-PROTO"]);
 			writer.Close();
 		}
 
