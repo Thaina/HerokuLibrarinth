@@ -22,7 +22,16 @@ namespace Heroku
 
 		protected override void Listen(HttpListenerContext context)
 		{
+			var request	= context.Request;
 			var response	= context.Response;
+
+			if(request.Headers["X-FORWARDED-PROTO"] != "https")
+			{
+				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
+				response.Redirect(builder.Uri.ToString());
+				return;
+			}
+
 			var writer	= new StreamWriter(response.OutputStream);
 			writer.WriteLine("TestTest");
 			writer.Close();
