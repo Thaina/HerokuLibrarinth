@@ -1,25 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 
 namespace Heroku
 {
 	class Program : HerokuBase.Program
 	{
-		IAsyncResult asyncResult;
-		readonly HttpListener listener	= new HttpListener();
-		void Listen(IAsyncResult result)
-		{
-			var context	= listener.EndGetContext(result);
-			asyncResult	= listener.BeginGetContext(Listen,null);
-
-			var response	= context.Response;
-			var writer	= new StreamWriter(response.OutputStream);
-			writer.WriteLine("TestTest");
-			writer.Close();
-		}
-
 		protected override bool IsAlive
 		{
 			get { return Console.ReadLine() != "quit"; }
