@@ -24,14 +24,15 @@ namespace Heroku
 		{
 			var request	= context.Request;
 			var response	= context.Response;
-			/*
+
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
-				response.Redirect(builder.Uri.ToString());
+				response.RedirectLocation	= builder.Uri.ToString();
+				response.StatusCode	= (int)HttpStatusCode.Moved;
+				response.Close();
 				return;
 			}
-			*/
 
 			var writer	= new StreamWriter(response.OutputStream);
 			writer.WriteLine("This is C# Application");
