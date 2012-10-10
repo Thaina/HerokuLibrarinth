@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Windows Desktop
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerokuLibrarinth", "HerokuLibrarinth\HerokuLibrarinth.csproj", "{1B1AAFD1-958D-49ED-ACB7-4D44429D1CF5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heroku", "HerokuLibrarinth\Heroku.csproj", "{1B1AAFD1-958D-49ED-ACB7-4D44429D1CF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerokuBase", "HerokuBase\HerokuBase.csproj", "{D13333DD-6F90-42A9-AB52-1363B40C2841}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{1B1AAFD1-958D-49ED-ACB7-4D44429D1CF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B1AAFD1-958D-49ED-ACB7-4D44429D1CF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B1AAFD1-958D-49ED-ACB7-4D44429D1CF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D13333DD-6F90-42A9-AB52-1363B40C2841}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D13333DD-6F90-42A9-AB52-1363B40C2841}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D13333DD-6F90-42A9-AB52-1363B40C2841}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D13333DD-6F90-42A9-AB52-1363B40C2841}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

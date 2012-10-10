@@ -1,14 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
-namespace HerokuLibrarinth
+namespace Heroku
 {
-	class Program
+	class Program : HerokuBase.Program
 	{
 		IAsyncResult asyncResult;
 		readonly HttpListener listener	= new HttpListener();
@@ -23,34 +20,31 @@ namespace HerokuLibrarinth
 			writer.Close();
 		}
 
-		Program()
-		{
-			var port	= Environment.GetEnvironmentVariable("PORT");
-			if(string.IsNullOrEmpty(port))
-				port	= "8888";
-			listener.Prefixes.Add("http://+:" + port + '/');
-
-			listener.Start();
-
-			asyncResult	= listener.BeginGetContext(Listen,listener);
-		}
-
-		static Program()
-		{
-			if(!HttpListener.IsSupported)
-				throw new NotSupportedException(typeof(HttpListener).ToString());
-		}
-
-		bool IsAlive
+		protected override bool IsAlive
 		{
 			get { return Console.ReadLine() != "quit"; }
 		}
 
+		protected override void InitListener(HttpListener listener)
+		{
+			var port	= Environment.GetEnvironmentVariable("PORT");
+			if(string.IsNullOrEmpty(port))
+				port	= "8888";
+
+			listener.Prefixes.Add("http://+:" + port + '/');
+		}
+
+		protected override void Listen(HttpListenerContext context)
+		{
+			var response	= context.Response;
+			var writer	= new StreamWriter(response.OutputStream);
+			writer.WriteLine("TestTest");
+			writer.Close();
+		}
+
 		static void Main(string[] args)
 		{
-			var program	= new Program();
-			while(program.IsAlive)
-				Thread.Sleep(100);
+			Run<Program>();
 		}
 	}
 }
