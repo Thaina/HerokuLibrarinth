@@ -33,10 +33,10 @@ namespace Heroku
 			response	= context.Response;
 
 			thread	= null;
+			isAlive	= true;
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				buffer	= null;
-				isAlive	= false;
 			
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 
@@ -48,7 +48,6 @@ namespace Heroku
 			}
 			else
 			{
-				isAlive	= true;
 				buffer	= new byte[256];
 				thread	= new Thread(BeginRead);
 				thread.Start();
@@ -57,7 +56,6 @@ namespace Heroku
 
 		void BeginRead()
 		{
-			request.InputStream.ReadTimeout	= 1000;
 			while(isAlive)
 			{
 				int length	= request.InputStream.Read(buffer,0,buffer.Length);
