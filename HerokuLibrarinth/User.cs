@@ -7,7 +7,7 @@ using System.Security.Principal;
 
 namespace Heroku
 {
-	struct Pusher : IDisposable
+	struct Pusher
 	{
 		public void Write(byte[] buffer,int offset = 0,int count = 0)
 		{
@@ -18,26 +18,20 @@ namespace Heroku
 			Thread.Sleep(1);
 		}
 
-		bool isAlive;
-		readonly Thread thread;
-		readonly byte[] buffer;
 		public readonly IPrincipal User;
 		readonly HttpListenerRequest request;
 		readonly HttpListenerResponse response;
 		readonly Action<byte[],int> callBack;
 		public Pusher(HttpListenerContext context,Action<HttpListenerRequest,HttpListenerResponse> prepare,Action<byte[],int> listenCallBack)
 		{
-			isAlive	= true;
 			callBack	= listenCallBack;
 
 			User	= context.User;
 			request	= context.Request;
 			response	= context.Response;
 
-			thread	= null;
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
-				buffer	= null;
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
 
@@ -45,33 +39,7 @@ namespace Heroku
 				response.StatusCode	= (int)HttpStatusCode.Moved;
 				response.Close();
 			}
-			else
-			{
-				prepare(request,response);
-
-				buffer	= new byte[256];
-				thread	= new Thread(BeginRead);
-				thread.Start();
-			}
-		}
-
-		void BeginRead()
-		{
-			while(isAlive)
-			{
-				int length	= request.InputStream.Read(buffer,0,buffer.Length);
-				if(length > 0 && callBack != null)
-					callBack(buffer,length);
-			}
-
-			response.OutputStream.Close();
-			response.Close();
-		}
-
-		public void Dispose()
-		{
-			isAlive	= false;
-			thread.Join();
+			else prepare(request,response);
 		}
 	}
 }

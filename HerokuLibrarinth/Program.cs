@@ -26,32 +26,33 @@ namespace Heroku
 		protected override void Listen(HttpListenerContext context)
 		{
 			Console.WriteLine("Create Pusher");
-			using(var pusher = new Pusher(context
-				,(req,resp) => {
+			var pusher = new Pusher(context
+				,(req,resp) =>
+				{
 					resp.ContentType	= "text/plain";
 					resp.KeepAlive	= true;
-				},null))
+				},null);
+
+
+			int start	= Environment.TickCount;
+			int last	= start;
+
+			Console.WriteLine("Pusher Start at " + start);
+			bool isAlive	= true;
+			while(isAlive)
 			{
-				int start	= Environment.TickCount;
-				int last	= start;
-
-				Console.WriteLine("Pusher Start at " + start);
-				bool isAlive	= true;
-				while(isAlive)
+				Thread.Sleep(100);
+				if(Environment.TickCount - last > 3000)
 				{
-					Thread.Sleep(100);
-					if(Environment.TickCount - last > 3000)
-					{
-						last	= Environment.TickCount;
-						Console.WriteLine("Pusher write at : " + Environment.TickCount);
-						pusher.Write(Encoding.Default.GetBytes("{ Time = " + Environment.TickCount + " }"));
-					}
+					last	= Environment.TickCount;
+					Console.WriteLine("Pusher write at : " + Environment.TickCount);
+					pusher.Write(Encoding.Default.GetBytes("{ Time = " + Environment.TickCount + " }"));
+				}
 
-					if(Environment.TickCount - start > 15000)
-					{
-						Console.WriteLine("Pusher dead : " + Environment.TickCount);
-						isAlive	= false;
-					}
+				if(Environment.TickCount - start > 15000)
+				{
+					Console.WriteLine("Pusher dead : " + Environment.TickCount);
+					isAlive	= false;
 				}
 			}
 		}
