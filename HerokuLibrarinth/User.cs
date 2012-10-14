@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+
 using System.Security.Principal;
-using System.Threading.Tasks;
 
 namespace Heroku
 {
@@ -46,7 +47,7 @@ namespace Heroku
 			{
 				isAlive	= true;
 				buffer	= new byte[256];
-				Parallel.Invoke(BeginRead);
+				new Thread(BeginRead).Start();
 			}
 		}
 
