@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace Heroku
 {
@@ -38,11 +39,12 @@ namespace Heroku
 				bool isAlive	= true;
 				while(isAlive)
 				{
+					Thread.Sleep(100);
 					if(Environment.TickCount - last > 3000)
 					{
 						last	= Environment.TickCount;
 						Console.WriteLine("Pusher write at : " + Environment.TickCount);
-						pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
+						pusher.Write(Encoding.Default.GetBytes("{ Time = " + Environment.TickCount + " }"));
 					}
 
 					if(Environment.TickCount - start > 15000)
