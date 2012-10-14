@@ -31,10 +31,16 @@ namespace Heroku
 				while(isAlive)
 				{
 					if(Environment.TickCount - lastTime > 1000)
+					{
+						Console.WriteLine("Pusher write at : " + Environment.TickCount);
 						pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
+					}
 
 					if(Environment.TickCount - lastTime > 60000)
+					{
+						Console.WriteLine("Pusher dead : " + Environment.TickCount);
 						isAlive	= false;
+					}
 				}
 			}
 		}
