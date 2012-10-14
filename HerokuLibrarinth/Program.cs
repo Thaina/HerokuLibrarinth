@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 
 namespace Heroku
 {
@@ -20,32 +21,22 @@ namespace Heroku
 			listener.Prefixes.Add("http://*:" + port + '/');
 		}
 
-		string state	= null;
 		protected override void Listen(HttpListenerContext context)
 		{
-			var request	= context.Request;
-			var response	= context.Response;
-
-			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
+			using(var pusher = new Pusher(context,null))
 			{
-				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
+				int lastTime	= Environment.TickCount;
 
-				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
+				bool isAlive	= true;
+				while(isAlive)
+				{
+					if(Environment.TickCount - lastTime > 1000)
+						pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
 
-				response.RedirectLocation	= builder.Uri.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped);
-				response.StatusCode	= (int)HttpStatusCode.Moved;
-				response.Close();
-				return;
+					if(Environment.TickCount - lastTime > 60000)
+						isAlive	= false;
+				}
 			}
-
-			var writer	= new StreamWriter(response.OutputStream);
-			writer.WriteLine("This is C# Application");
-			writer.WriteLine("Request from " + request.Headers["X-FORWARDED-PROTO"]);
-			writer.WriteLine("Last State : " + state);
-			writer.WriteLine("New State : " + request.QueryString["state"]);
-			writer.Close();
-
-			state	= request.QueryString["state"];
 		}
 
 		static void Main(string[] args)
