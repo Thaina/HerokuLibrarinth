@@ -25,18 +25,20 @@ namespace Heroku
 		{
 			using(var pusher = new Pusher(context,null))
 			{
-				int lastTime	= Environment.TickCount;
+				int start	= Environment.TickCount;
+				int last	= start;
 
 				bool isAlive	= true;
 				while(isAlive)
 				{
-					if(Environment.TickCount - lastTime > 1000)
+					if(Environment.TickCount - last > 1000)
 					{
+						last	= Environment.TickCount;
 						Console.WriteLine("Pusher write at : " + Environment.TickCount);
 						pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
 					}
 
-					if(Environment.TickCount - lastTime > 60000)
+					if(Environment.TickCount - start > 20000)
 					{
 						Console.WriteLine("Pusher dead : " + Environment.TickCount);
 						isAlive	= false;
