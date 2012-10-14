@@ -23,34 +23,27 @@ namespace Heroku
 
 		protected override void Listen(HttpListenerContext context)
 		{
-			try
+			using(var pusher = new Pusher(context,null))
 			{
-				using(var pusher = new Pusher(context,null))
+				int start	= Environment.TickCount;
+				int last	= start;
+
+				bool isAlive	= true;
+				while(isAlive)
 				{
-					int start	= Environment.TickCount;
-					int last	= start;
-
-					bool isAlive	= true;
-					while(isAlive)
+					if(Environment.TickCount - last > 1000)
 					{
-						if(Environment.TickCount - last > 1000)
-						{
-							last	= Environment.TickCount;
-							Console.WriteLine("Pusher write at : " + Environment.TickCount);
-							pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
-						}
+						last	= Environment.TickCount;
+						Console.WriteLine("Pusher write at : " + Environment.TickCount);
+						pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
+					}
 
-						if(Environment.TickCount - start > 20000)
-						{
-							Console.WriteLine("Pusher dead : " + Environment.TickCount);
-							isAlive	= false;
-						}
+					if(Environment.TickCount - start > 20000)
+					{
+						Console.WriteLine("Pusher dead : " + Environment.TickCount);
+						isAlive	= false;
 					}
 				}
-			}
-			catch(Exception e)
-			{
-				Console.WriteLine(e.ToString());
 			}
 		}
 

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace Heroku
 {
@@ -28,10 +29,10 @@ namespace Heroku
 			request	= context.Request;
 			response	= context.Response;
 
-			asyncResult	= null;
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				buffer	= null;
+				isAlive	= false;
 
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 
@@ -43,28 +44,26 @@ namespace Heroku
 			}
 			else
 			{
+				isAlive	= true;
 				buffer	= new byte[256];
-				asyncResult	= request.InputStream.BeginRead(buffer,0,buffer.Length,BeginRead,null);
+				Parallel.Invoke(BeginRead);
 			}
 		}
 
-		IAsyncResult asyncResult;
-		void BeginRead(IAsyncResult result)
+		bool isAlive;
+		void BeginRead()
 		{
-			if(result != null && result.IsCompleted)
+			while(isAlive)
 			{
+				int length	= request.InputStream.Read(buffer,0,buffer.Length);
 				if(callBack != null)
-					callBack(buffer,request.InputStream.EndRead(result));
-				asyncResult	= request.InputStream.BeginRead(buffer,0,buffer.Length,BeginRead,null);
+					callBack(buffer,length);
 			}
-		}
 
-		public void Dispose()
-		{
-			asyncResult.AsyncWaitHandle.Close();
-			asyncResult.AsyncWaitHandle.Dispose();
 			response.OutputStream.Close();
 			response.Close();
 		}
+		
+		public void Dispose() { isAlive	= false; }
 	}
 }
