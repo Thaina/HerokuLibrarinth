@@ -7,6 +7,26 @@ using System.Security.Principal;
 
 namespace Heroku
 {
+	struct ThreadTask : IDisposable
+	{
+		public bool IsAlive { get { return isAlive; } }
+
+		bool isAlive;
+		readonly Thread thread;
+		public ThreadTask(ThreadStart action)
+		{
+			isAlive	= true;
+			thread	= new Thread(action);
+			thread.Start();
+		}
+
+		public void Dispose()
+		{
+			isAlive	= false;
+			thread.Join();
+		}
+	}
+
 	struct Pusher : IDisposable
 	{
 		public void Write(byte[] buffer,int offset = 0,int count = 0)
@@ -30,11 +50,11 @@ namespace Heroku
 			request	= context.Request;
 			response	= context.Response;
 
+			threadTask	= default(ThreadTask);
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				buffer	= null;
-				isAlive	= false;
-
+			
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 
 				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
@@ -45,16 +65,14 @@ namespace Heroku
 			}
 			else
 			{
-				isAlive	= true;
 				buffer	= new byte[256];
-				new Thread(BeginRead).Start();
+				threadTask	= new ThreadTask(BeginRead);
 			}
 		}
 
-		bool isAlive;
 		void BeginRead()
 		{
-			while(isAlive)
+			while(threadTask.IsAlive)
 			{
 				int length	= request.InputStream.Read(buffer,0,buffer.Length);
 				if(callBack != null)
@@ -64,7 +82,11 @@ namespace Heroku
 			response.OutputStream.Close();
 			response.Close();
 		}
-		
-		public void Dispose() { isAlive	= false; }
+
+		readonly ThreadTask threadTask;
+		public void Dispose()
+		{
+			threadTask.Dispose();
+		}
 	}
 }
