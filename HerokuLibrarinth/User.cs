@@ -14,7 +14,6 @@ namespace Heroku
 			if(count < 1)
 				count	= buffer.Length;
 			response.OutputStream.Write(buffer,offset,count);
-			response.OutputStream.Flush();
 		}
 
 		bool isAlive;
