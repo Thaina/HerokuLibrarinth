@@ -18,16 +18,19 @@ namespace Heroku
 			if(string.IsNullOrEmpty(port))
 				port	= "8888";
 
+			Console.WriteLine("Create Program at " + port);
 			listener.Prefixes.Add("http://*:" + port + '/');
 		}
 
 		protected override void Listen(HttpListenerContext context)
 		{
+			Console.WriteLine("Create Pusher");
 			using(var pusher = new Pusher(context,null))
 			{
 				int start	= Environment.TickCount;
 				int last	= start;
 
+				Console.WriteLine("Pusher Start at " + start);
 				bool isAlive	= true;
 				while(isAlive)
 				{
