@@ -25,7 +25,11 @@ namespace Heroku
 		protected override void Listen(HttpListenerContext context)
 		{
 			Console.WriteLine("Create Pusher");
-			using(var pusher = new Pusher(context,null))
+			using(var pusher = new Pusher(context
+				,(req,resp) => {
+					resp.ContentType	= "text/plain";
+					resp.KeepAlive	= true;
+				},null))
 			{
 				int start	= Environment.TickCount;
 				int last	= start;

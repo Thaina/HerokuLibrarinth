@@ -24,8 +24,9 @@ namespace Heroku
 		readonly HttpListenerRequest request;
 		readonly HttpListenerResponse response;
 		readonly Action<byte[],int> callBack;
-		public Pusher(HttpListenerContext context,Action<byte[],int> listenCallBack)
+		public Pusher(HttpListenerContext context,Action<HttpListenerRequest,HttpListenerResponse> prepare,Action<byte[],int> listenCallBack)
 		{
+			isAlive	= true;
 			callBack	= listenCallBack;
 
 			User	= context.User;
@@ -33,13 +34,10 @@ namespace Heroku
 			response	= context.Response;
 
 			thread	= null;
-			isAlive	= true;
 			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				buffer	= null;
-			
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
-
 				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
 
 				response.RedirectLocation	= builder.Uri.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped);
@@ -48,6 +46,8 @@ namespace Heroku
 			}
 			else
 			{
+				prepare(request,response);
+
 				buffer	= new byte[256];
 				thread	= new Thread(BeginRead);
 				thread.Start();
