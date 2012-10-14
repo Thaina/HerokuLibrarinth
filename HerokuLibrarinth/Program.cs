@@ -38,14 +38,14 @@ namespace Heroku
 				bool isAlive	= true;
 				while(isAlive)
 				{
-					if(Environment.TickCount - last > 1000)
+					if(Environment.TickCount - last > 3000)
 					{
 						last	= Environment.TickCount;
 						Console.WriteLine("Pusher write at : " + Environment.TickCount);
 						pusher.Write(Encoding.Unicode.GetBytes("{ Time = " + Environment.TickCount + " }"));
 					}
 
-					if(Environment.TickCount - start > 20000)
+					if(Environment.TickCount - start > 15000)
 					{
 						Console.WriteLine("Pusher dead : " + Environment.TickCount);
 						isAlive	= false;
