@@ -44,16 +44,19 @@ namespace Heroku
 			else
 			{
 				buffer	= new byte[256];
-				BeginRead();
+				asyncResult	= request.InputStream.BeginRead(buffer,0,buffer.Length,BeginRead,null);
 			}
 		}
 
 		IAsyncResult asyncResult;
-		void BeginRead(IAsyncResult result = null)
+		void BeginRead(IAsyncResult result)
 		{
-			if(result != null && callBack != null)
-				callBack(buffer,request.InputStream.EndRead(result));
-			asyncResult	= request.InputStream.BeginRead(buffer,0,buffer.Length,BeginRead,null);
+			if(result != null && result.IsCompleted)
+			{
+				if(callBack != null)
+					callBack(buffer,request.InputStream.EndRead(result));
+				asyncResult	= request.InputStream.BeginRead(buffer,0,buffer.Length,BeginRead,null);
+			}
 		}
 
 		public void Dispose()
