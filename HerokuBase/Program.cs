@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Threading;
 
 namespace HerokuBase
@@ -25,6 +26,7 @@ namespace HerokuBase
 			listener.Close();
 		}
 
+		protected abstract void Work();
 		protected abstract bool IsAlive { get; }
 		protected abstract void InitListener(HttpListener listener);
 		protected abstract void Listen(HttpListenerContext context);
@@ -45,8 +47,12 @@ namespace HerokuBase
 		{
 			var program	= new P();
 			program.Run();
+
 			while(program.IsAlive)
-				Thread.Sleep(100);
+			{
+				Thread.Sleep(1000);
+				program.Work();
+			}
 		}
 	}
 }

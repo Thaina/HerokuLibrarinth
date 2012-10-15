@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Mime;
 using System.Text;
 using System.Threading;
 
@@ -10,7 +11,13 @@ namespace Heroku
 	{
 		protected override bool IsAlive
 		{
-			get { return Console.ReadLine() != "quit"; }
+			get
+			{
+				Func<string> action	= Console.ReadLine;
+				var result	= action.BeginInvoke(null,null);
+				result.AsyncWaitHandle.WaitOne(10000);
+				return !result.IsCompleted || action.EndInvoke(result) != "quit";
+			}
 		}
 
 		protected override void InitListener(HttpListener listener)
@@ -26,35 +33,43 @@ namespace Heroku
 		protected override void Listen(HttpListenerContext context)
 		{
 			Console.WriteLine("Create Pusher");
-			var pusher = new Pusher(context
+			using(var pusher = new Pusher(context
 				,(req,resp) =>
 				{
-					resp.ContentType	= "text/plain";
-					resp.KeepAlive	= true;
-				},null);
-
-
-			int start	= Environment.TickCount;
-			int last	= start;
-
-			Console.WriteLine("Pusher Start at " + start);
-			bool isAlive	= true;
-			while(isAlive)
+					resp.SendChunked	= true;
+					resp.ContentEncoding	= Encoding.UTF8;
+					resp.ContentType	= new ContentType("text/plain") { CharSet = "UTF-8" }.ToString();
+					resp.AddHeader("Access-Control-Allow-Origin","*");
+					resp.AddHeader("Cache-Control","no-cache");
+				}))
 			{
-				Thread.Sleep(100);
-				if(Environment.TickCount - last > 3000)
-				{
-					last	= Environment.TickCount;
-					Console.WriteLine("Pusher write at : " + Environment.TickCount);
-					pusher.Write(Encoding.Default.GetBytes("{ Time = " + Environment.TickCount + " }"));
-				}
+				int start	= Environment.TickCount;
+				int last	= start;
 
-				if(Environment.TickCount - start > 15000)
+				Console.WriteLine("Pusher Start at " + start);
+				bool isAlive	= true;
+				while(isAlive)
 				{
-					Console.WriteLine("Pusher dead : " + Environment.TickCount);
-					isAlive	= false;
+					Thread.Sleep(100);
+					if(Environment.TickCount - last > 1000)
+					{
+						last	= Environment.TickCount;
+						Console.WriteLine("Pusher write at : " + Environment.TickCount);
+						pusher.Write(Encoding.UTF8.GetBytes("{ Time = " + Environment.TickCount + " }\n"));
+					}
+
+					if(Environment.TickCount - start > 15000)
+					{
+						Console.WriteLine("Pusher dead : " + Environment.TickCount);
+						isAlive	= false;
+					}
 				}
 			}
+
+		}
+
+		protected override void Work()
+		{
 		}
 
 		static void Main(string[] args)

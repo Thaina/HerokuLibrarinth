@@ -7,7 +7,7 @@ using System.Security.Principal;
 
 namespace Heroku
 {
-	struct Pusher
+	struct Pusher : IDisposable
 	{
 		public void Write(byte[] buffer,int offset = 0,int count = 0)
 		{
@@ -21,25 +21,26 @@ namespace Heroku
 		public readonly IPrincipal User;
 		readonly HttpListenerRequest request;
 		readonly HttpListenerResponse response;
-		readonly Action<byte[],int> callBack;
-		public Pusher(HttpListenerContext context,Action<HttpListenerRequest,HttpListenerResponse> prepare,Action<byte[],int> listenCallBack)
+		public Pusher(HttpListenerContext context,Action<HttpListenerRequest,HttpListenerResponse> prepare)
 		{
-			callBack	= listenCallBack;
-
 			User	= context.User;
 			request	= context.Request;
 			response	= context.Response;
-
-			if(request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
+			if(request.Url.Port != 8888 && request.Headers["X-FORWARDED-PROTO"] != Uri.UriSchemeHttps)
 			{
 				var builder	= new UriBuilder(request.Url) { Scheme	= Uri.UriSchemeHttps };
 				var uriComponentsWithoutPort	= UriComponents.AbsoluteUri & ~UriComponents.Port;
 
 				response.RedirectLocation	= builder.Uri.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped);
 				response.StatusCode	= (int)HttpStatusCode.Moved;
-				response.Close();
 			}
 			else prepare(request,response);
+		}
+
+		public void Dispose()
+		{
+			response.OutputStream.Close();
+			response.Close();
 		}
 	}
 }
