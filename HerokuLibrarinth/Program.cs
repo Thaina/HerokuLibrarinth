@@ -2,22 +2,45 @@
 using System.IO;
 using System.Net;
 using System.Net.Mime;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 
 namespace Heroku
 {
-	class Program : HerokuBase.Program
+	struct Asyncer<T>
 	{
-		protected override bool IsAlive
+		Func<T> Func;
+		IAsyncResult asyncResult;
+		public Asyncer(Func<T> func)
+		{
+			Func	= func;
+			asyncResult	= null;
+		}
+
+		public T Result
 		{
 			get
 			{
-				Func<string> action	= Console.ReadLine;
-				var result	= action.BeginInvoke(null,null);
-				result.AsyncWaitHandle.WaitOne(10000);
-				return !result.IsCompleted || action.EndInvoke(result) != "quit";
+				if(asyncResult == null)
+					asyncResult	= Func.BeginInvoke(null,null);
+
+				if(!asyncResult.IsCompleted)
+					return default(T);
+				
+				var result	= Func.EndInvoke(asyncResult);
+				asyncResult	= null;
+				return result;
 			}
+		}
+	}
+
+	class Program : HerokuBase.Program,Pusher.ICallBack
+	{
+		Asyncer<string> consoleReadLine	= new Asyncer<string>(Console.ReadLine);
+		protected override bool IsAlive
+		{
+			get { return consoleReadLine.Result != "quit"; }
 		}
 
 		protected override void InitListener(HttpListener listener)
@@ -30,18 +53,11 @@ namespace Heroku
 			listener.Prefixes.Add("http://*:" + port + '/');
 		}
 
+
 		protected override void Listen(HttpListenerContext context)
 		{
 			Console.WriteLine("Create Pusher");
-			using(var pusher = new Pusher(context
-				,(req,resp) =>
-				{
-					resp.SendChunked	= true;
-					resp.ContentEncoding	= Encoding.UTF8;
-					resp.ContentType	= new ContentType("text/plain") { CharSet = "UTF-8" }.ToString();
-					resp.AddHeader("Access-Control-Allow-Origin","*");
-					resp.AddHeader("Cache-Control","no-cache");
-				}))
+			using(var pusher = new Pusher(context,this))
 			{
 				int start	= Environment.TickCount;
 				int last	= start;
@@ -69,6 +85,19 @@ namespace Heroku
 		}
 
 		protected override void Work()
+		{
+		}
+
+		public void Prepare(HttpListenerRequest request,HttpListenerResponse response)
+		{
+			response.SendChunked	= true;
+			response.ContentEncoding	= Encoding.UTF8;
+			response.ContentType	= "text/json; charset=UTF-8";
+			response.AddHeader("Access-Control-Allow-Origin","*");
+			response.AddHeader("Cache-Control","no-cache");
+		}
+
+		public void Disconnected(IPrincipal user,HttpListenerRequest request,HttpListenerResponse response)
 		{
 		}
 

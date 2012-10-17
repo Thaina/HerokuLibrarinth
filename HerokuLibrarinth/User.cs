@@ -9,19 +9,33 @@ namespace Heroku
 {
 	struct Pusher : IDisposable
 	{
+		public interface ICallBack
+		{
+			void Prepare(HttpListenerRequest request,HttpListenerResponse response);
+			void Disconnected(IPrincipal user,HttpListenerRequest request,HttpListenerResponse response);
+		}
+
 		public void Write(byte[] buffer,int offset = 0,int count = 0)
 		{
 			if(count < 1)
 				count	= buffer.Length;
-			response.OutputStream.Write(buffer,offset,count);
-			response.OutputStream.Flush();
+
+			try
+			{
+				response.OutputStream.Write(buffer,offset,count);
+				response.OutputStream.Flush();
+			}
+			finally
+			{
+			}
+
 			Thread.Sleep(1);
 		}
 
 		public readonly IPrincipal User;
 		readonly HttpListenerRequest request;
 		readonly HttpListenerResponse response;
-		public Pusher(HttpListenerContext context,Action<HttpListenerRequest,HttpListenerResponse> prepare)
+		public Pusher(HttpListenerContext context,ICallBack callBack)
 		{
 			User	= context.User;
 			request	= context.Request;
@@ -34,7 +48,7 @@ namespace Heroku
 				response.RedirectLocation	= builder.Uri.GetComponents(uriComponentsWithoutPort,UriFormat.Unescaped);
 				response.StatusCode	= (int)HttpStatusCode.Moved;
 			}
-			else prepare(request,response);
+			else callBack.Prepare(request,response);
 		}
 
 		public void Dispose()
